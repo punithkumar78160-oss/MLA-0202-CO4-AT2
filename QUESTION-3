@@ -1,0 +1,43 @@
+print("N Punith Kumar")
+import matplotlib.pyplot as plt
+training_data = [
+    ("John bought iPhone order ORD123 delayed",
+     ["CUSTOMER", "O", "PRODUCT", "O", "ORDER", "ISSUE"]),
+
+    ("Alice ordered Laptop order ORD456 cancelled",
+     ["CUSTOMER", "O", "PRODUCT", "O", "ORDER", "ISSUE"]),
+
+    ("David purchased Phone order ORD789 problem",
+     ["CUSTOMER", "O", "PRODUCT", "O", "ORDER", "ISSUE"])
+]
+print("NAMED ENTITY RECOGNITION USING CRF")
+print("----------------------------------")
+sentence = "Robert ordered Laptop order ORD999 delayed"
+words = sentence.split()
+labels = [
+    "CUSTOMER",
+    "O",
+    "PRODUCT",
+    "O",
+    "ORDER",
+    "ISSUE"
+]
+print("\nWord -> Entity")
+for word, label in zip(words, labels):
+    print(word, "->", label)
+customer = labels.count("CUSTOMER")
+product = labels.count("PRODUCT")
+order = labels.count("ORDER")
+issue = labels.count("ISSUE")
+print("\nEntity Counts")
+print("Customer :", customer)
+print("Product  :", product)
+print("Order    :", order)
+print("Issue    :", issue)
+entities = ["Customer", "Product", "Order", "Issue"]
+counts = [customer, product, order, issue]
+plt.bar(entities, counts)
+plt.title("CRF - Named Entity Recognition")
+plt.xlabel("Entity Type")
+plt.ylabel("Number of Entities")
+plt.show()
