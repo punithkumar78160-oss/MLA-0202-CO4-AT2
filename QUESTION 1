@@ -1,0 +1,179 @@
+import itertools
+import matplotlib.pyplot as plt
+import networkx as nx
+print("============================================================")
+print("       FRAUD DETECTION USING BAYESIAN NETWORK")
+print("============================================================")
+nodes = [
+    "Transaction Amount",
+    "Transaction Location",
+    "Login Device",
+    "Fraud"
+]
+edges = [
+    ("Transaction Amount", "Fraud"),
+    ("Transaction Location", "Fraud"),
+    ("Login Device", "Fraud")
+]
+P_amount = {
+    "Low": 0.60,
+    "High": 0.40
+}
+P_location = {
+    "Normal": 0.70,
+    "Foreign": 0.30
+}
+P_device = {
+    "Known": 0.75,
+    "Unknown": 0.25
+}
+fraud_cpt = {
+
+    ("Low", "Normal", "Known"):   0.01,
+    ("Low", "Normal", "Unknown"): 0.08,
+
+    ("Low", "Foreign", "Known"):   0.05,
+    ("Low", "Foreign", "Unknown"): 0.15,
+
+    ("High", "Normal", "Known"):   0.05,
+    ("High", "Normal", "Unknown"): 0.25,
+
+    ("High", "Foreign", "Known"):   0.30,
+    ("High", "Foreign", "Unknown"): 0.70
+}
+def joint_probability(amount, location, device, fraud):
+    """
+    Calculates:
+    P(Amount, Location, Device, Fraud)
+    """
+
+    p_amount = P_amount[amount]
+    p_location = P_location[location]
+    p_device = P_device[device]
+
+    p_fraud = fraud_cpt[(amount, location, device)]
+
+    if fraud == "Yes":
+        p_fraud_value = p_fraud
+    else:
+        p_fraud_value = 1 - p_fraud
+
+    return p_amount * p_location * p_device * p_fraud_value
+def probability_of_fraud():
+
+    total = 0
+
+    for amount in P_amount:
+        for location in P_location:
+            for device in P_device:
+
+                total += joint_probability(
+                    amount,
+                    location,
+                    device,
+                    "Yes"
+                )
+
+    return total
+p_fraud = probability_of_fraud()
+p_not_fraud = 1 - p_fraud
+print("\nPrior Probability:")
+print(f"P(Fraud = Yes) = {p_fraud:.4f}")
+print(f"P(Fraud = No)  = {p_not_fraud:.4f}")
+amount = "High"
+location = "Foreign"
+device = "Unknown"
+print("\n------------------------------------------------------------")
+print("Given Transaction")
+print("------------------------------------------------------------")
+print("Transaction Amount :", amount)
+print("Transaction Location:", location)
+print("Login Device       :", device)
+fraud_probability = fraud_cpt[(amount, location, device)]
+print("\nConditional Probability:")
+print(
+    f"P(Fraud | Amount={amount}, "
+    f"Location={location}, Device={device}) "
+    f"= {fraud_probability:.2f}"
+)
+threshold = 0.50
+if fraud_probability >= threshold:
+    prediction = "FRAUDULENT"
+else:
+    prediction = "LEGITIMATE"
+
+print("\nPrediction:", prediction)
+print("\n============================================================")
+print("                    FRAUD CPT")
+print("============================================================")
+print(
+    f"{'Amount':<10}"
+    f"{'Location':<12}"
+    f"{'Device':<12}"
+    f"{'P(Fraud)':<10}"
+)
+for key, probability in fraud_cpt.items():
+
+    print(
+        f"{key[0]:<10}"
+        f"{key[1]:<12}"
+        f"{key[2]:<12}"
+        f"{probability:<10.2f}"
+    )
+G = nx.DiGraph()
+
+G.add_nodes_from(nodes)
+G.add_edges_from(edges)
+
+position = {
+    "Transaction Amount": (-1, 1),
+    "Transaction Location": (0, 1),
+    "Login Device": (1, 1),
+    "Fraud": (0, 0)
+}
+plt.figure(figsize=(10, 6))
+nx.draw(
+    G,
+    position,
+    with_labels=True,
+    node_size=3500,
+    node_color="lightblue",
+    font_size=10,
+    font_weight="bold",
+    arrows=True,
+    arrowsize=20
+)
+plt.title("Bayesian Network for Credit Card Fraud Detection")
+plt.axis("off")
+plt.show()
+transactions = [
+    ("Low", "Normal", "Known"),
+    ("High", "Normal", "Known"),
+    ("High", "Foreign", "Known"),
+    ("High", "Foreign", "Unknown")
+]
+labels = []
+probabilities = []
+for transaction in transactions:
+
+    labels.append(
+        transaction[0] + "\n" +
+        transaction[1] + "\n" +
+        transaction[2]
+    )
+
+    probabilities.append(
+        fraud_cpt[transaction]
+    )
+
+plt.figure(figsize=(10, 6))
+plt.bar(labels, probabilities)
+plt.xlabel("Transaction Characteristics")
+plt.ylabel("Fraud Probability")
+plt.title("Fraud Probability for Different Transactions")
+plt.ylim(0, 1)
+
+plt.tight_layout()
+plt.show()
+
+print("\nProgram completed successfully.")
