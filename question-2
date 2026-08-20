@@ -1,0 +1,96 @@
+import matplotlib.pyplot as plt
+states = ["Healthy", "Warning", "Failure"]
+observations = ["Normal", "Vibration", "HighTemp", "Noise"]
+initial = {
+    "Healthy": 0.6,
+    "Warning": 0.3,
+    "Failure": 0.1
+}
+transition = {
+    "Healthy": {
+        "Healthy": 0.7,
+        "Warning": 0.25,
+        "Failure": 0.05
+    },
+    "Warning": {
+        "Healthy": 0.2,
+        "Warning": 0.6,
+        "Failure": 0.2
+    },
+    "Failure": {
+        "Healthy": 0.05,
+        "Warning": 0.15,
+        "Failure": 0.8
+    }
+}
+emission = {
+    "Healthy": {
+        "Normal": 0.8,
+        "Vibration": 0.1,
+        "HighTemp": 0.05,
+        "Noise": 0.05
+    },
+    "Warning": {
+        "Normal": 0.2,
+        "Vibration": 0.4,
+        "HighTemp": 0.25,
+        "Noise": 0.15
+    },
+    "Failure": {
+        "Normal": 0.05,
+        "Vibration": 0.25,
+        "HighTemp": 0.4,
+        "Noise": 0.3
+    }
+}
+
+obs = ["Normal", "Vibration", "HighTemp", "Noise"]
+prob = {}
+path = {}
+for state in states:
+    prob[state] = initial[state] * emission[state][obs[0]]
+    path[state] = [state]
+for t in range(1, len(obs)):
+    new_prob = {}
+    new_path = {}
+
+   for current in states:
+        best_prob = 0
+        best_previous = ""
+
+        for previous in states:
+            p = (prob[previous] *
+                 transition[previous][current] *
+                 emission[current][obs[t]])
+
+            if p > best_prob:
+                best_prob = p
+                best_previous = previous
+
+        new_prob[current] = best_prob
+        new_path[current] = path[best_previous] + [current]
+
+    prob = new_prob
+    path = new_path
+
+best_state = max(prob, key=prob.get)
+print("HIDDEN MARKOV MODEL")
+print("-------------------")
+print("Observations:", obs)
+print("\nPredicted States:")
+print(path[best_state])
+print("\nFinal Condition:", best_state)
+state_number = {
+    "Healthy": 1,
+    "Warning": 2,
+    "Failure": 3
+}
+y = [state_number[x] for x in path[best_state]]
+x = range(1, len(y) + 1)
+plt.plot(x, y, marker="o")
+plt.yticks([1, 2, 3], ["Healthy", "Warning", "Failure"])
+plt.xlabel("Observation Number")
+plt.ylabel("Machine Condition")
+plt.title("HMM - Predicted Machine Condition")
+plt.grid()
+plt.show()
